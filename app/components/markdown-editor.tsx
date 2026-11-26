@@ -14,7 +14,7 @@ const editorTheme = EditorView.theme(
     "&": {
       backgroundColor: "transparent",
       color: "#d0d1ce",
-      fontSize: "13px",
+      fontSize: "16px",
       height: "100%",
     },
     ".cm-content": {

@@ -48,14 +48,14 @@ body {
 
 .login-card h1 {
   margin: 0 0 12px;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 500;
   letter-spacing: -0.8px;
 }
 
 .login-card label {
   color: #b6b7b4;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .login-card input[type="password"] {
@@ -65,6 +65,7 @@ body {
   border-radius: 5px;
   background: #111213;
   color: #e8e8e6;
+  font-size: 16px;
 }
 
 .login-card button[type="submit"] {
@@ -80,7 +81,7 @@ body {
 .login-error {
   margin: 0;
   color: var(--danger);
-  font-size: 13px;
+  font-size: 15px;
 }
 
 button,
@@ -130,7 +131,7 @@ input:focus-visible {
 .list-heading h1 {
   margin: 0;
   color: #e8e8e6;
-  font-size: 24px;
+  font-size: 26px;
   letter-spacing: -0.8px;
   font-weight: 500;
 }
@@ -141,6 +142,11 @@ input:focus-visible {
   gap: 8px;
 }
 
+.list-heading-title svg {
+  width: 20px;
+  height: 20px;
+}
+
 .list-heading-actions {
   display: flex;
   align-items: center;
@@ -149,8 +155,8 @@ input:focus-visible {
 
 .logout-button {
   display: grid;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   place-items: center;
   border: 1px solid transparent;
   border-radius: 6px;
@@ -165,10 +171,15 @@ input:focus-visible {
   color: #e8e8e6;
 }
 
+.logout-button svg {
+  width: 18px;
+  height: 18px;
+}
+
 .help-title-button {
   display: grid;
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   place-items: center;
   border: 0;
   border-radius: 5px;
@@ -184,7 +195,7 @@ input:focus-visible {
 
 .new-button {
   display: inline-flex;
-  height: 32px;
+  height: 38px;
   align-items: center;
   gap: 7px;
   padding: 0 12px;
@@ -192,12 +203,17 @@ input:focus-visible {
   border-radius: 6px;
   background: #343c32;
   color: #dce4d5;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
 }
 
 .new-button:hover {
   background: #414b3e;
+}
+
+.new-button svg {
+  width: 17px;
+  height: 17px;
 }
 
 .search-row {
@@ -210,7 +226,7 @@ input:focus-visible {
 .search-field {
   display: flex;
   min-width: 0;
-  height: 36px;
+  height: 42px;
   flex: 1;
   align-items: center;
   gap: 9px;
@@ -226,6 +242,11 @@ input:focus-visible {
   border-color: #66745f;
 }
 
+.search-field > svg {
+  width: 19px;
+  height: 19px;
+}
+
 .search-field input {
   min-width: 0;
   flex: 1;
@@ -233,7 +254,7 @@ input:focus-visible {
   outline: 0;
   background: transparent;
   color: #dedfdd;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .search-field input::placeholder {
@@ -242,6 +263,8 @@ input:focus-visible {
 
 .clear-search {
   display: grid;
+  min-width: 32px;
+  min-height: 32px;
   place-items: center;
   border: 0;
   background: none;
@@ -249,16 +272,21 @@ input:focus-visible {
   cursor: pointer;
 }
 
+.clear-search svg {
+  width: 17px;
+  height: 17px;
+}
+
 .list-toolbar {
   display: flex;
-  height: 47px;
+  height: 50px;
   flex: none;
   align-items: center;
   justify-content: space-between;
   margin: 0 19px;
   border-bottom: 1px solid var(--line);
   color: #77797c;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .list-toolbar-controls {
@@ -269,8 +297,8 @@ input:focus-visible {
 
 .favorite-filter-button {
   display: grid;
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   place-items: center;
   border: 0;
   border-radius: 5px;
@@ -288,6 +316,11 @@ input:focus-visible {
   color: var(--star);
 }
 
+.favorite-filter-button svg {
+  width: 19px;
+  height: 19px;
+}
+
 .sort-control {
   position: relative;
 }
@@ -300,7 +333,7 @@ input:focus-visible {
   border: 0;
   background: none;
   color: #a1a2a3;
-  font-size: 11px;
+  font-size: 13px;
   cursor: pointer;
 }
 
@@ -308,12 +341,22 @@ input:focus-visible {
   color: #ddd;
 }
 
+.sort-button svg:first-child {
+  width: 17px;
+  height: 17px;
+}
+
+.sort-button svg:last-child {
+  width: 15px;
+  height: 15px;
+}
+
 .sort-menu {
   position: absolute;
   z-index: 4;
   top: 29px;
   right: 0;
-  width: 168px;
+  width: 184px;
   padding: 4px;
   border: 1px solid #3a3b3d;
   border-radius: 7px;
@@ -324,7 +367,7 @@ input:focus-visible {
 .sort-menu button {
   display: grid;
   width: 100%;
-  grid-template-columns: 16px 1fr 16px;
+  grid-template-columns: 18px 1fr 18px;
   align-items: center;
   gap: 8px;
   padding: 8px;
@@ -332,7 +375,7 @@ input:focus-visible {
   border-radius: 4px;
   background: transparent;
   color: #c6c7c5;
-  font-size: 11px;
+  font-size: 13px;
   text-align: left;
   cursor: pointer;
 }
@@ -341,10 +384,15 @@ input:focus-visible {
   background: #333436;
 }
 
+.sort-menu svg {
+  width: 16px;
+  height: 16px;
+}
+
 .sort-option-icon,
 .sort-option-check {
   display: grid;
-  width: 16px;
+  width: 18px;
   place-items: center;
 }
 
@@ -376,8 +424,8 @@ input:focus-visible {
 .note-open {
   display: block;
   width: 100%;
-  min-height: 64px;
-  padding: 12px 49px 11px 12px;
+  min-height: 72px;
+  padding: 13px 49px 12px 12px;
   border: 0;
   background: transparent;
   text-align: left;
@@ -390,9 +438,9 @@ input:focus-visible {
   align-items: center;
   gap: 6px;
   color: #dedfdd;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
-  line-height: 18px;
+  line-height: 21px;
 }
 
 .note-title > span:first-child {
@@ -403,6 +451,8 @@ input:focus-visible {
 
 .row-star {
   flex: none;
+  width: 14px;
+  height: 14px;
   color: var(--star);
 }
 
@@ -418,7 +468,7 @@ input:focus-visible {
   min-width: 0;
   overflow: hidden;
   color: #818386;
-  font-size: 10px;
+  font-size: 12px;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -426,7 +476,7 @@ input:focus-visible {
 .note-date {
   flex: none;
   color: #77797b;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .row-delete {
@@ -455,6 +505,11 @@ input:focus-visible {
   color: #d48d83;
 }
 
+.row-delete svg {
+  width: 17px;
+  height: 17px;
+}
+
 .empty-list {
   display: flex;
   flex-direction: column;
@@ -466,11 +521,16 @@ input:focus-visible {
 .empty-list p {
   margin: 12px 0 4px;
   color: #c2c3c0;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .empty-list span {
-  font-size: 11px;
+  font-size: 13px;
+}
+
+.empty-list > svg {
+  width: 22px;
+  height: 22px;
 }
 
 .workspace {
@@ -487,7 +547,12 @@ input:focus-visible {
   justify-content: center;
   gap: 10px;
   color: #707275;
-  font-size: 12px;
+  font-size: 14px;
+}
+
+.empty-workspace svg {
+  width: 25px;
+  height: 25px;
 }
 
 .note-workspace {
@@ -512,8 +577,8 @@ input:focus-visible {
 
 .note-toolbar-button {
   display: grid;
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 38px;
   place-items: center;
   border: 0;
   border-radius: 6px;
@@ -525,6 +590,11 @@ input:focus-visible {
 .note-toolbar-button:hover {
   background: var(--hover);
   color: #e0e1de;
+}
+
+.note-toolbar-button svg {
+  width: 19px;
+  height: 19px;
 }
 
 .note-toolbar-button.is-favorite {
@@ -556,7 +626,7 @@ input:focus-visible {
   outline: 0;
   background: transparent;
   color: #e5e5e2;
-  font-size: 28px;
+  font-size: 32px;
   line-height: 1.3;
   letter-spacing: -0.8px;
   font-weight: 500;
@@ -573,7 +643,7 @@ input:focus-visible {
   gap: 8px;
   margin-top: 10px;
   color: #77797b;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .metadata-dot {
@@ -594,7 +664,7 @@ input:focus-visible {
   height: 100%;
   overflow-y: auto;
   color: #c0c1be;
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1.8;
 }
 
@@ -614,15 +684,15 @@ input:focus-visible {
 }
 
 .markdown-content h1 {
-  font-size: 24px;
+  font-size: 28px;
 }
 
 .markdown-content h2 {
-  font-size: 18px;
+  font-size: 21px;
 }
 
 .markdown-content h3 {
-  font-size: 15px;
+  font-size: 18px;
 }
 
 .markdown-content h2 {
@@ -688,7 +758,7 @@ input:focus-visible {
   border-radius: 3px;
   background: #27282a;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .markdown-content a {
@@ -732,7 +802,7 @@ input:focus-visible {
   place-items: start;
   padding: 18px;
   color: #75777a;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .confirm-backdrop {
@@ -758,14 +828,14 @@ input:focus-visible {
 .confirm-dialog h2 {
   margin: 0 0 7px;
   color: #e5e5e2;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
 }
 
 .confirm-dialog p {
   margin: 0;
   color: #999b9d;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.6;
   overflow-wrap: anywhere;
 }
@@ -779,11 +849,11 @@ input:focus-visible {
 
 .cancel-button,
 .confirm-delete-button {
-  height: 32px;
+  height: 38px;
   padding: 0 12px;
   border: 1px solid #3a3b3d;
   border-radius: 5px;
-  font-size: 11px;
+  font-size: 13px;
   cursor: pointer;
 }
 
@@ -837,7 +907,7 @@ input:focus-visible {
 .shortcut-header h2 {
   margin: 0;
   color: #e5e5e2;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 500;
 }
 
@@ -856,6 +926,11 @@ input:focus-visible {
 .shortcut-close:hover {
   background: var(--hover);
   color: #e0e1de;
+}
+
+.shortcut-close svg {
+  width: 18px;
+  height: 18px;
 }
 
 .shortcut-list {
@@ -881,7 +956,7 @@ input:focus-visible {
 .shortcut-list dd {
   margin: 0;
   color: #a0a2a3;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .shortcut-list kbd {
@@ -892,13 +967,13 @@ input:focus-visible {
   background: #252628;
   color: #d0d1ce;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 10px;
+  font-size: 12px;
   text-align: center;
 }
 
 .shortcut-list dt > span {
   color: #747679;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .toast {
@@ -915,7 +990,7 @@ input:focus-visible {
   background: #222820;
   color: #d1dcc9;
   box-shadow: 0 8px 26px #0006;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 @media (max-width: 1050px) {
@@ -979,11 +1054,11 @@ input:focus-visible {
 
   .document-title,
   .title-input {
-    font-size: 24px;
+    font-size: 28px;
   }
 
   .note-content-area {
-    margin-top: 18px;
+    margin-top: 20px;
   }
 
   .list-heading {
@@ -1003,5 +1078,31 @@ input:focus-visible {
   .note-list {
     padding-right: 10px;
     padding-left: 10px;
+  }
+
+  .search-field {
+    height: 46px;
+  }
+
+  .new-button {
+    height: 44px;
+  }
+
+  .note-actions {
+    gap: 10px;
+  }
+
+  .note-toolbar-button {
+    width: 42px;
+    height: 42px;
+  }
+
+  .note-toolbar-button svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .note-metadata {
+    font-size: 12px;
   }
 }
