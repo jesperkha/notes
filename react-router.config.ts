@@ -5,5 +5,5 @@ export default {
   future: {
     v8_middleware: true,
   },
-  allowedActionOrigins: ["*"],
+  allowedActionOrigins: ["**"],
 } satisfies Config;
