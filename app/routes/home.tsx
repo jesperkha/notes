@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ArrowLeft,
   ArrowDownWideNarrow,
   Check,
   ChevronDown,
@@ -305,6 +306,12 @@ export default function Home() {
     setIsEditing(false);
   }
 
+  function backToList() {
+    if (isEditing) saveNote();
+    setSelectedId(null);
+    setIsEditing(false);
+  }
+
   function createNote() {
     if (isEditing) saveNote();
     const note = mockApi.createNote();
@@ -404,41 +411,18 @@ export default function Home() {
   }, [deleteTarget, draftContent, draftTitle, helpOpen, isEditing, selectedNote, sortMenuOpen]);
 
   return (
-    <main className="app-shell">
-      <aside className="rail">
-        <nav className="rail-nav" aria-label="Main navigation">
-          <button
-            className={`rail-button ${filterMode === "all" ? "active" : ""}`}
-            aria-label="Notes"
-            aria-pressed={filterMode === "all"}
-            onClick={() => setFilterMode("all")}
-          >
-            <FileText size={19} strokeWidth={1.7} />
-          </button>
-          <button
-            className={`rail-button ${filterMode === "favorites" ? "active" : ""}`}
-            aria-label="Favorites"
-            aria-pressed={filterMode === "favorites"}
-            onClick={() => setFilterMode((mode) => (mode === "all" ? "favorites" : "all"))}
-          >
-            <Star size={19} strokeWidth={1.7} />
-          </button>
-        </nav>
-        <div className="rail-bottom">
-          <button
-            className="rail-button"
-            aria-label="Keyboard shortcuts"
-            onClick={() => setHelpOpen(true)}
-          >
-            <CircleHelp size={19} strokeWidth={1.7} />
-          </button>
-        </div>
-      </aside>
-
+    <main className={`app-shell ${selectedNote ? "has-selected-note" : ""}`}>
       <section className="notes-panel">
         <div className="list-heading">
-          <div>
+          <div className="list-heading-title">
             <h1>{filterMode === "favorites" ? "Favorites" : "Notes"}</h1>
+            <button
+              className="help-title-button"
+              aria-label="Keyboard shortcuts"
+              onClick={() => setHelpOpen(true)}
+            >
+              <CircleHelp size={17} strokeWidth={1.7} />
+            </button>
           </div>
           <button className="new-button" onClick={createNote}>
             <Pencil size={14} strokeWidth={2} />
@@ -473,48 +457,59 @@ export default function Home() {
         </label>
         <div className="list-toolbar">
           <span>{visibleNotes.length} notes</span>
-          <div className="sort-control" ref={sortControlRef}>
+          <div className="list-toolbar-controls">
             <button
-              className="sort-button"
-              onClick={() => setSortMenuOpen((open) => !open)}
-              aria-expanded={sortMenuOpen}
+              className={`favorite-filter-button ${filterMode === "favorites" ? "is-active" : ""}`}
+              aria-label={filterMode === "favorites" ? "Show all notes" : "Show favorites only"}
+              aria-pressed={filterMode === "favorites"}
+              title={filterMode === "favorites" ? "Show all notes" : "Show favorites only"}
+              onClick={() => setFilterMode((mode) => (mode === "all" ? "favorites" : "all"))}
             >
-              <ArrowDownWideNarrow size={15} />
-              <span>{sortMode === "edited" ? "Edited" : "Created"}</span>
-              <ChevronDown size={13} />
+              <Star size={16} fill={filterMode === "favorites" ? "currentColor" : "none"} />
             </button>
-            {sortMenuOpen && (
-              <div className="sort-menu">
-                <button
-                  onClick={() => {
-                    setSortMode("edited");
-                    setSortMenuOpen(false);
-                  }}
-                >
-                  <span className="sort-option-icon">
-                    <Clock3 size={14} />
-                  </span>
-                  <span>Date edited</span>
-                  <span className="sort-option-check">
-                    {sortMode === "edited" && <Check size={14} />}
-                  </span>
-                </button>
-                <button
-                  onClick={() => {
-                    setSortMode("created");
-                    setSortMenuOpen(false);
-                  }}
-                >
-                  <span className="sort-option-icon">
-                    <Filter size={14} />
-                  </span>
-                  <span>Date created</span>
-                  <span className="sort-option-check">
-                    {sortMode === "created" && <Check size={14} />}
-                  </span>
-                </button>
-              </div>
-            )}
+            <div className="sort-control" ref={sortControlRef}>
+              <button
+                className="sort-button"
+                onClick={() => setSortMenuOpen((open) => !open)}
+                aria-expanded={sortMenuOpen}
+              >
+                <ArrowDownWideNarrow size={15} />
+                <span>{sortMode === "edited" ? "Edited" : "Created"}</span>
+                <ChevronDown size={13} />
+              </button>
+              {sortMenuOpen && (
+                <div className="sort-menu">
+                  <button
+                    onClick={() => {
+                      setSortMode("edited");
+                      setSortMenuOpen(false);
+                    }}
+                  >
+                    <span className="sort-option-icon">
+                      <Clock3 size={14} />
+                    </span>
+                    <span>Date edited</span>
+                    <span className="sort-option-check">
+                      {sortMode === "edited" && <Check size={14} />}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSortMode("created");
+                      setSortMenuOpen(false);
+                    }}
+                  >
+                    <span className="sort-option-icon">
+                      <Filter size={14} />
+                    </span>
+                    <span>Date created</span>
+                    <span className="sort-option-check">
+                      {sortMode === "created" && <Check size={14} />}
+                    </span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div className="note-list" ref={noteListRef}>
@@ -563,6 +558,13 @@ export default function Home() {
         {selectedNote ? (
           <div className="note-workspace">
             <aside className="note-actions" aria-label="Note actions">
+              <button
+                className="note-toolbar-button mobile-back-button"
+                aria-label="Back to notes"
+                onClick={backToList}
+              >
+                <ArrowLeft size={17} />
+              </button>
               <button
                 className={`note-toolbar-button favorite-toggle ${selectedNote.favorite ? "is-favorite" : ""}`}
                 aria-label={selectedNote.favorite ? "Remove favorite" : "Add favorite"}
