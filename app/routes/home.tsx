@@ -317,12 +317,6 @@ export default function Home() {
         return;
       }
 
-      if (event.key === "/" && isEditing) {
-        event.preventDefault();
-        saveNote();
-        return;
-      }
-
       if (event.key === "Escape") {
         if (helpOpen) setHelpOpen(false);
         else if (deleteTarget) setDeleteTargetId(null);
