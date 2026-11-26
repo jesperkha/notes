@@ -88,7 +88,7 @@ function formatFullDate(date: string) {
 
 export function meta(_args: Route.MetaArgs) {
   return [
-    { title: "Notes — Still" },
+    { title: "Notes" },
     {
       name: "description",
       content: "A quiet place for everything worth keeping.",
@@ -101,7 +101,7 @@ function LoginPage({ error }: { error?: string }) {
     <main className="login-shell">
       <Form method="post" className="login-card">
         <input type="hidden" name="intent" value="login" />
-        <h1>Still</h1>
+        <h1>Notes</h1>
         <label htmlFor="password">Password</label>
         <input
           id="password"
@@ -373,14 +373,6 @@ export default function Home() {
             </button>
           </div>
           <div className="list-heading-actions">
-            <button
-              className="new-button"
-              onClick={createNote}
-              disabled={createFetcher.state !== "idle"}
-            >
-              <Pencil size={14} strokeWidth={2} />
-              <span>New</span>
-            </button>
             <Form method="post">
               <input type="hidden" name="intent" value="logout" />
               <button
@@ -394,32 +386,42 @@ export default function Home() {
             </Form>
           </div>
         </div>
-        <label className="search-field">
-          <Search size={16} strokeWidth={1.8} />
-          <input
-            ref={searchInputRef}
-            value={search}
-            onChange={(event) => updateSearch(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" && visibleNotes[0]) {
-                event.preventDefault();
-                openNote(visibleNotes[0]);
-                searchInputRef.current?.blur();
-              }
-            }}
-            placeholder="Search notes"
-            aria-label="Search notes"
-          />
-          {search ? (
-            <button
-              className="clear-search"
-              onClick={() => updateSearch("")}
-              aria-label="Clear search"
-            >
-              <X size={14} />
-            </button>
-          ) : null}
-        </label>
+        <div className="search-row">
+          <label className="search-field">
+            <Search size={16} strokeWidth={1.8} />
+            <input
+              ref={searchInputRef}
+              value={search}
+              onChange={(event) => updateSearch(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && visibleNotes[0]) {
+                  event.preventDefault();
+                  openNote(visibleNotes[0]);
+                  searchInputRef.current?.blur();
+                }
+              }}
+              placeholder="Search notes"
+              aria-label="Search notes"
+            />
+            {search ? (
+              <button
+                className="clear-search"
+                onClick={() => updateSearch("")}
+                aria-label="Clear search"
+              >
+                <X size={14} />
+              </button>
+            ) : null}
+          </label>
+          <button
+            className="new-button"
+            onClick={createNote}
+            disabled={createFetcher.state !== "idle"}
+          >
+            <Pencil size={14} strokeWidth={2} />
+            <span>New</span>
+          </button>
+        </div>
         <div className="list-toolbar">
           <span>{visibleNotes.length} notes</span>
           <div className="list-toolbar-controls">

@@ -200,13 +200,21 @@ input:focus-visible {
   background: #414b3e;
 }
 
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 17px;
+}
+
 .search-field {
   display: flex;
-  flex: none;
+  min-width: 0;
   height: 36px;
+  flex: 1;
   align-items: center;
   gap: 9px;
-  margin: 0 17px;
+  margin: 0;
   padding: 0 10px;
   border: 1px solid #303133;
   border-radius: 6px;
@@ -982,7 +990,7 @@ input:focus-visible {
     padding: 20px 16px 16px;
   }
 
-  .search-field {
+  .search-row {
     margin-right: 16px;
     margin-left: 16px;
   }

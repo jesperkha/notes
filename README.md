@@ -1,19 +1,34 @@
-# Still
+# Notes
+
+Self hosted single-login markdown notes app.
+
+<img src=".github/assets/screenshot.png">
 
 ## Run locally
 
 ```sh
-pnpm install
-cp .env.example .env
-docker compose up -d --wait db
+# Generate env vars
+cenv fix
+
+# Run database
+docker compose up -d
+
+# Run migrations and app
+pnpm i
 pnpm db:migrate
 pnpm dev
+
+# Optional seeding
+pnpm db:seed
 ```
-
-To load sample notes into the local database, run `pnpm db:seed`. The script is for development only; the database is empty by default.
-
-Required environment variables: `DATABASE_URL` and `APP_PASSWORD`. `POSTGRES_PASSWORD` configures the local Compose database; set `POSTGRES_PORT` if port 5432 is occupied. `pnpm start` applies migrations before starting the server.
 
 ## Deploy
 
-The GitHub Actions workflow publishes `ghcr.io/<owner>/<repository>:latest` on pushes to the default branch and version tags. [Open the GHCR package page](https://github.com/OWNER/REPOSITORY/pkgs/container/REPOSITORY) after replacing the placeholders with the GitHub repository path. Configure `DATABASE_URL` and `APP_PASSWORD` in the deployment environment, then run the image on a network that can reach Postgres.
+```
+ghcr.io/jesperkha/notes:latest
+```
+
+Required environment variables:
+
+- `DATABASE_URL`: URL to postgres database
+- `PASSWORD`: App password
