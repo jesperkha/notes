@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Form, useActionData, useFetcher, useLoaderData } from "react-router";
 import {
   ArrowLeft,
   ArrowDownWideNarrow,
@@ -9,6 +10,7 @@ import {
   Eye,
   FileText,
   Filter,
+  LogOut,
   Pencil,
   Search,
   Star,
@@ -17,6 +19,16 @@ import {
 } from "lucide-react";
 import { MarkdownContent } from "../components/markdown-content";
 import type { Route } from "./+types/home";
+import { action as homeAction, loader as homeLoader } from "./home.server";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
+
+export function loader(args: LoaderFunctionArgs) {
+  return homeLoader(args);
+}
+
+export function action(args: ActionFunctionArgs) {
+  return homeAction(args);
+}
 
 const MarkdownEditor = lazy(() => import("../components/markdown-editor"));
 
@@ -27,139 +39,7 @@ type Note = {
   createdAt: string;
   editedAt: string;
   favorite: boolean;
-  type: 0;
-};
-
-const initialNotes: Note[] = [
-  {
-    id: "field-notes",
-    title: "Field notes from the coast",
-    content:
-      "## Sunday, 18 August\n\nThe path opens up just past the old boathouse. The wind was **strong from the west**, but the water stayed bright and glassy.\n\n> A place can feel familiar before you know its name.\n\n- Bring the small film camera next time\n- Check the tide before leaving\n- Ask Liv about the old lighthouse",
-    createdAt: "2026-08-16T10:22:00",
-    editedAt: "2026-08-18T16:42:00",
-    favorite: true,
-    type: 0,
-  },
-  {
-    id: "reading-list",
-    title: "Books for the next long weekend",
-    content:
-      "A short list for slow mornings and train rides.\n\n1. *The Summer Book* — Tove Jansson\n2. *Pilgrim at Tinker Creek* — Annie Dillard\n3. *A Field Guide to Getting Lost* — Rebecca Solnit\n\nStart with the one that has the most dog-eared pages.",
-    createdAt: "2026-08-12T09:10:00",
-    editedAt: "2026-08-17T11:05:00",
-    favorite: false,
-    type: 0,
-  },
-  {
-    id: "coffee",
-    title: "Coffee ratio — V60",
-    content:
-      "## House recipe\n\n- Coffee: **18 g**, medium-fine\n- Water: **300 g** at 94°C\n- Bloom: 45 g for 35 seconds\n- Pour slowly in circles to 300 g\n- Total brew time: 2:45–3:15\n\nTry a slightly coarser grind if it tastes dry.",
-    createdAt: "2026-08-09T14:28:00",
-    editedAt: "2026-08-15T08:30:00",
-    favorite: true,
-    type: 0,
-  },
-  {
-    id: "studio",
-    title: "Studio refresh",
-    content:
-      "### To figure out\n\n- [ ] Move the desk closer to the window\n- [ ] Replace the warm bulbs with neutral ones\n- [x] Measure the wall for shelves\n\nKeep the wood desk. Everything else is flexible.",
-    createdAt: "2026-08-10T12:15:00",
-    editedAt: "2026-08-13T17:20:00",
-    favorite: false,
-    type: 0,
-  },
-  {
-    id: "weekend",
-    title: "A few things for Saturday",
-    content:
-      "Walk to the market before it gets busy. Pick up peaches, rye bread, and the good olive oil. Leave the afternoon open.",
-    createdAt: "2026-08-05T19:40:00",
-    editedAt: "2026-08-11T20:12:00",
-    favorite: false,
-    type: 0,
-  },
-  {
-    id: "ideas",
-    title: "Small things worth remembering",
-    content:
-      "# Small things worth remembering\n\n## The quiet details\n\n### Places\n\nThe sound of rain on the greenhouse roof. The bakery that opens before sunrise. How much better a room feels with one empty wall.\n\nRead [the field notes](https://example.com/field-notes) or revisit https://example.com/places.",
-    createdAt: "2026-08-01T08:12:00",
-    editedAt: "2026-08-08T09:50:00",
-    favorite: false,
-    type: 0,
-  },
-  {
-    id: "garden",
-    title: "What to plant in autumn",
-    content:
-      "A few bulbs for the terrace boxes: white tulips, alliums, and crocus. Leave space for thyme along the edge.",
-    createdAt: "2026-07-28T15:40:00",
-    editedAt: "2026-08-06T12:15:00",
-    favorite: false,
-    type: 0,
-  },
-  {
-    id: "packing",
-    title: "Overnight bag",
-    content:
-      "Light rain jacket, paperback, charger, notebook, clean socks. Remember the small camera.",
-    createdAt: "2026-07-20T08:22:00",
-    editedAt: "2026-08-04T17:05:00",
-    favorite: false,
-    type: 0,
-  },
-  {
-    id: "lunch",
-    title: "Lunch for friends",
-    content:
-      "Roasted tomatoes and white beans with sourdough. Make the lemon dressing just before serving.",
-    createdAt: "2026-07-18T18:32:00",
-    editedAt: "2026-08-02T10:28:00",
-    favorite: false,
-    type: 0,
-  },
-  {
-    id: "studio-ideas",
-    title: "A few ideas for the studio",
-    content:
-      "Keep the table clear. Add a low lamp in the corner. Use the small shelves for the things I reach for every day.",
-    createdAt: "2026-07-11T13:08:00",
-    editedAt: "2026-07-30T09:10:00",
-    favorite: false,
-    type: 0,
-  },
-];
-
-const mockApi = {
-  createNote(): Note {
-    const now = new Date().toISOString();
-    return {
-      id: `note-${Date.now()}`,
-      title: "Untitled note",
-      content: "",
-      createdAt: now,
-      editedAt: now,
-      favorite: false,
-      type: 0,
-    };
-  },
-  saveNote(note: Note, title: string, content: string): Note {
-    return {
-      ...note,
-      title: title.trim() || "Untitled note",
-      content,
-      editedAt: new Date().toISOString(),
-    };
-  },
-  toggleFavorite(note: Note): Note {
-    return { ...note, favorite: !note.favorite };
-  },
-  deleteNote(notes: Note[], noteId: string): Note[] {
-    return notes.filter((note) => note.id !== noteId);
-  },
+  type: number;
 };
 
 type SortMode = "edited" | "created";
@@ -216,8 +96,40 @@ export function meta(_args: Route.MetaArgs) {
   ];
 }
 
+function LoginPage({ error }: { error?: string }) {
+  return (
+    <main className="login-shell">
+      <Form method="post" className="login-card">
+        <input type="hidden" name="intent" value="login" />
+        <h1>Still</h1>
+        <label htmlFor="password">Password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          autoFocus
+        />
+        {error ? (
+          <p className="login-error" role="alert">
+            {error}
+          </p>
+        ) : null}
+        <button type="submit">Sign in</button>
+      </Form>
+    </main>
+  );
+}
+
 export default function Home() {
-  const [notes, setNotes] = useState(initialNotes);
+  const { notes: loadedNotes } = useLoaderData<typeof loader>();
+  const notes = loadedNotes ?? [];
+  const actionData = useActionData<typeof action>();
+  const createFetcher = useFetcher<typeof action>();
+  const saveFetcher = useFetcher<typeof action>();
+  const favoriteFetcher = useFetcher<typeof action>();
+  const deleteFetcher = useFetcher<typeof action>();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [searchHighlightId, setSearchHighlightId] = useState<string | null>(null);
@@ -233,6 +145,7 @@ export default function Home() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const noteListRef = useRef<HTMLDivElement>(null);
   const [helpOpen, setHelpOpen] = useState(false);
+  const loginError = actionData && "error" in actionData ? actionData.error : undefined;
 
   const selectedNote = notes.find((note) => note.id === selectedId) ?? null;
   const deleteTarget = notes.find((note) => note.id === deleteTargetId) ?? null;
@@ -268,6 +181,43 @@ export default function Home() {
     return () => window.clearTimeout(timeout);
   }, [toast]);
 
+  useEffect(() => {
+    const result = createFetcher.data;
+    if (!result) return;
+    if ("error" in result) {
+      showToast(result.error);
+      return;
+    }
+    if (!("noteId" in result)) return;
+    setSelectedId(result.noteId);
+    setDraftTitle("Untitled note");
+    setDraftContent("");
+    setIsEditing(true);
+    setFilterMode("all");
+    showToast("New note created");
+  }, [createFetcher.data]);
+
+  useEffect(() => {
+    const result = saveFetcher.data;
+    if (!result) return;
+    if ("error" in result) {
+      setIsEditing(true);
+      showToast(result.error);
+    } else if (result.intent === "save") showToast("Changes saved");
+  }, [saveFetcher.data]);
+
+  useEffect(() => {
+    const result = favoriteFetcher.data;
+    if (result && "error" in result) showToast(result.error);
+  }, [favoriteFetcher.data]);
+
+  useEffect(() => {
+    const result = deleteFetcher.data;
+    if (!result) return;
+    if ("error" in result) showToast(result.error);
+    else if (result.intent === "delete") showToast("Note deleted");
+  }, [deleteFetcher.data]);
+
   const visibleNotes = useMemo(() => {
     const query = search.trim();
     return notes
@@ -281,6 +231,9 @@ export default function Home() {
       .filter(({ score }) => !query || score > 0)
       .sort((a, b) => {
         if (query && a.score !== b.score) return b.score - a.score;
+        if (!query && filterMode === "all" && a.note.favorite !== b.note.favorite) {
+          return Number(b.note.favorite) - Number(a.note.favorite);
+        }
         const key = sortMode === "edited" ? "editedAt" : "createdAt";
         return new Date(b.note[key]).getTime() - new Date(a.note[key]).getTime();
       })
@@ -314,31 +267,25 @@ export default function Home() {
 
   function createNote() {
     if (isEditing) saveNote();
-    const note = mockApi.createNote();
-    setFilterMode("all");
-    setNotes((current) => [note, ...current]);
-    setSelectedId(note.id);
-    setDraftTitle(note.title);
-    setDraftContent(note.content);
-    setIsEditing(true);
-    showToast("New note created");
+    createFetcher.submit({ intent: "create" }, { method: "post" });
   }
 
   function saveNote() {
     if (!selectedNote) return;
-    setNotes((current) =>
-      current.map((note) =>
-        note.id === selectedNote.id ? mockApi.saveNote(note, draftTitle, draftContent) : note,
-      ),
+    saveFetcher.submit(
+      {
+        intent: "save",
+        id: selectedNote.id,
+        title: draftTitle,
+        content: draftContent,
+      },
+      { method: "post" },
     );
     setIsEditing(false);
-    showToast("Changes saved");
   }
 
   function toggleFavorite(noteId: string) {
-    setNotes((current) =>
-      current.map((note) => (note.id === noteId ? mockApi.toggleFavorite(note) : note)),
-    );
+    favoriteFetcher.submit({ intent: "favorite", id: noteId }, { method: "post" });
   }
 
   function requestDelete(noteId: string) {
@@ -347,13 +294,12 @@ export default function Home() {
 
   function confirmDelete() {
     if (!deleteTarget) return;
-    setNotes((current) => mockApi.deleteNote(current, deleteTarget.id));
+    deleteFetcher.submit({ intent: "delete", id: deleteTarget.id }, { method: "post" });
     if (selectedId === deleteTarget.id) {
       setSelectedId(null);
       setIsEditing(false);
     }
     setDeleteTargetId(null);
-    showToast("Note deleted");
   }
 
   function beginEdit() {
@@ -410,6 +356,8 @@ export default function Home() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [deleteTarget, draftContent, draftTitle, helpOpen, isEditing, selectedNote, sortMenuOpen]);
 
+  if (!loadedNotes) return <LoginPage error={loginError} />;
+
   return (
     <main className={`app-shell ${selectedNote ? "has-selected-note" : ""}`}>
       <section className="notes-panel">
@@ -424,10 +372,27 @@ export default function Home() {
               <CircleHelp size={17} strokeWidth={1.7} />
             </button>
           </div>
-          <button className="new-button" onClick={createNote}>
-            <Pencil size={14} strokeWidth={2} />
-            <span>New</span>
-          </button>
+          <div className="list-heading-actions">
+            <button
+              className="new-button"
+              onClick={createNote}
+              disabled={createFetcher.state !== "idle"}
+            >
+              <Pencil size={14} strokeWidth={2} />
+              <span>New</span>
+            </button>
+            <Form method="post">
+              <input type="hidden" name="intent" value="logout" />
+              <button
+                className="logout-button"
+                type="submit"
+                aria-label="Sign out"
+                title="Sign out"
+              >
+                <LogOut size={15} />
+              </button>
+            </Form>
+          </div>
         </div>
         <label className="search-field">
           <Search size={16} strokeWidth={1.8} />
@@ -569,6 +534,7 @@ export default function Home() {
                 className={`note-toolbar-button favorite-toggle ${selectedNote.favorite ? "is-favorite" : ""}`}
                 aria-label={selectedNote.favorite ? "Remove favorite" : "Add favorite"}
                 aria-pressed={selectedNote.favorite}
+                disabled={favoriteFetcher.state !== "idle"}
                 onClick={() => toggleFavorite(selectedNote.id)}
               >
                 <Star size={17} fill={selectedNote.favorite ? "currentColor" : "none"} />
@@ -577,6 +543,7 @@ export default function Home() {
                 className="note-toolbar-button"
                 aria-label={isEditing ? "View note" : "Edit note"}
                 title={isEditing ? "View note" : "Edit note"}
+                disabled={saveFetcher.state !== "idle"}
                 onClick={isEditing ? saveNote : beginEdit}
               >
                 {isEditing ? <Eye size={16} /> : <Pencil size={15} />}
@@ -640,7 +607,11 @@ export default function Home() {
               <button className="cancel-button" onClick={() => setDeleteTargetId(null)}>
                 Cancel
               </button>
-              <button className="confirm-delete-button" onClick={confirmDelete}>
+              <button
+                className="confirm-delete-button"
+                onClick={confirmDelete}
+                disabled={deleteFetcher.state !== "idle"}
+              >
                 Delete
               </button>
             </div>

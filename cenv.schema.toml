@@ -1,0 +1,9 @@
+[[entries]]
+key = "DATABASE_URL"
+default = "postgres://postgres:postgres@localhost:5544/notes-db?sslmode=disable"
+required = true
+
+[[entries]]
+key = "PASSWORD"
+default = "password"
+required = true

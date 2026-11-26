@@ -1,6 +1,6 @@
 # App description
 
-The goal is to create a simple self-hosted notes app.
+Right now i have a skeleton for a simple notes app. The UI design is finished, whats left is the backend implementation.
 
 ### Features
 
@@ -43,14 +43,6 @@ The goal is to create a simple self-hosted notes app.
 
 - Notes should have a type column which indicates the note type. For this demo, all notes are 0 (markdown). Future iterations may add other note types (link, list, etc). Only deal with type 0 for now.
 
-## First steps
+# Plan
 
-Before beginning on the app itself, you must first make a mock demo with the finalized design to be approved before continuing. This requires:
-
-1. Creating a React Router framework mode app
-2. Creating a single page with necessary components to show the full feature set.
-3. Use dummy data and bogus API (function) calls to make it work enough to test the design only.
-
-After doing this, I will either make you iterate on the design or let you being with the rest of the app.
-
-Before starting with the design phase ask any necessary questions.
+Create a plan to implement all functionality which is now done using static data and mocks. Ask any relevant questions before starting.

@@ -5,10 +5,13 @@
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node app/db/migrate.mjs",
+    "db:seed": "tsx app/db/seed.ts",
     "lint": "oxlint",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
-    "start": "react-router-serve ./build/server/index.js",
+    "start": "pnpm db:migrate && react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
@@ -19,8 +22,11 @@
     "@react-router/node": "^7.9.2",
     "@react-router/serve": "^7.9.2",
     "@uiw/react-codemirror": "^4.25.13",
+    "dotenv": "^18.0.10",
+    "drizzle-orm": "^0.45.4",
     "isbot": "^5.1.31",
     "lucide-react": "^0.468.0",
+    "postgres": "^4.1.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-markdown": "^10.1.0",
@@ -33,10 +39,13 @@
     "@types/node": "^22.15.30",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
+    "drizzle-kit": "^0.31.11",
     "oxfmt": "^0.80.0",
     "oxlint": "^1.16.0",
     "tailwindcss": "^4.1.13",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.2",
     "vite": "^6.3.6"
-  }
+  },
+  "packageManager": "pnpm@12.16.1"
 }
