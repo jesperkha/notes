@@ -7,6 +7,7 @@ export const notes = pgTable("notes", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   editedAt: timestamp("edited_at", { withTimezone: true }).notNull().defaultNow(),
   favorite: boolean("favorite").notNull().default(false),
+  archived: boolean("archived").notNull().default(false),
   type: integer("type").notNull().default(0),
 });
 

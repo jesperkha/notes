@@ -295,30 +295,8 @@ input:focus-visible {
   gap: 12px;
 }
 
-.favorite-filter-button {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  place-items: center;
-  border: 0;
-  border-radius: 5px;
-  background: transparent;
-  color: #a1a2a3;
-  cursor: pointer;
-}
-
-.favorite-filter-button:hover {
-  background: var(--hover);
-  color: #ddd;
-}
-
-.favorite-filter-button.is-active {
-  color: var(--star);
-}
-
-.favorite-filter-button svg {
-  width: 19px;
-  height: 19px;
+.filter-control {
+  position: relative;
 }
 
 .sort-control {

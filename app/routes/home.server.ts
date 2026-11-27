@@ -81,6 +81,26 @@ export async function action({ request }: ActionFunctionArgs) {
     const [updated] = await db
       .update(notes)
       .set({ favorite: sql`not ${notes.favorite}` })
+      .where(and(eq(notes.id, id), eq(notes.type, 0), eq(notes.archived, false)))
+      .returning({ id: notes.id });
+    if (!updated) return data({ error: "Note not found." }, { status: 404 });
+    return { intent, noteId: id };
+  }
+
+  if (intent === "archive" || intent === "unarchive") {
+    const [updated] = await db
+      .update(notes)
+      .set({
+        archived: intent === "archive",
+        ...(intent === "archive" ? { favorite: false } : {}),
+        ...(formData.has("title") && formData.has("content")
+          ? {
+              title: formString(formData, "title").trim() || "Untitled note",
+              content: formString(formData, "content"),
+              editedAt: new Date(),
+            }
+          : {}),
+      })
       .where(and(eq(notes.id, id), eq(notes.type, 0)))
       .returning({ id: notes.id });
     if (!updated) return data({ error: "Note not found." }, { status: 404 });

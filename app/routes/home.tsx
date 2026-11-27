@@ -3,6 +3,8 @@ import { Form, useActionData, useFetcher, useLoaderData } from "react-router";
 import {
   ArrowLeft,
   ArrowDownWideNarrow,
+  Archive,
+  ArchiveRestore,
   Check,
   ChevronDown,
   Clock3,
@@ -39,11 +41,12 @@ type Note = {
   createdAt: string;
   editedAt: string;
   favorite: boolean;
+  archived: boolean;
   type: number;
 };
 
 type SortMode = "edited" | "created";
-type FilterMode = "all" | "favorites";
+type FilterMode = "all" | "favorites" | "archived";
 
 function fuzzyScore(query: string, value: string) {
   const normalizedQuery = query.toLowerCase().trim();
@@ -129,18 +132,21 @@ export default function Home() {
   const createFetcher = useFetcher<typeof action>();
   const saveFetcher = useFetcher<typeof action>();
   const favoriteFetcher = useFetcher<typeof action>();
+  const archiveFetcher = useFetcher<typeof action>();
   const deleteFetcher = useFetcher<typeof action>();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [searchHighlightId, setSearchHighlightId] = useState<string | null>(null);
   const [sortMode, setSortMode] = useState<SortMode>("edited");
   const [filterMode, setFilterMode] = useState<FilterMode>("all");
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState("");
   const [draftContent, setDraftContent] = useState("");
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [toast, setToast] = useState("");
+  const filterControlRef = useRef<HTMLDivElement>(null);
   const sortControlRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const noteListRef = useRef<HTMLDivElement>(null);
@@ -174,6 +180,21 @@ export default function Home() {
     document.addEventListener("pointerdown", closeSortMenu);
     return () => document.removeEventListener("pointerdown", closeSortMenu);
   }, [sortMenuOpen]);
+
+  useEffect(() => {
+    if (!filterMenuOpen) return;
+    function closeFilterMenu(event: PointerEvent) {
+      if (
+        event.target instanceof Node &&
+        filterControlRef.current &&
+        !filterControlRef.current.contains(event.target)
+      ) {
+        setFilterMenuOpen(false);
+      }
+    }
+    document.addEventListener("pointerdown", closeFilterMenu);
+    return () => document.removeEventListener("pointerdown", closeFilterMenu);
+  }, [filterMenuOpen]);
 
   useEffect(() => {
     if (!toast) return;
@@ -212,6 +233,18 @@ export default function Home() {
   }, [favoriteFetcher.data]);
 
   useEffect(() => {
+    const result = archiveFetcher.data;
+    if (!result) return;
+    if ("error" in result) {
+      showToast(result.error);
+    } else if (result.intent === "archive" || result.intent === "unarchive") {
+      setSelectedId(null);
+      setIsEditing(false);
+      showToast(result.intent === "archive" ? "Note archived" : "Note unarchived");
+    }
+  }, [archiveFetcher.data]);
+
+  useEffect(() => {
     const result = deleteFetcher.data;
     if (!result) return;
     if ("error" in result) showToast(result.error);
@@ -221,7 +254,11 @@ export default function Home() {
   const visibleNotes = useMemo(() => {
     const query = search.trim();
     return notes
-      .filter((note) => filterMode === "all" || note.favorite)
+      .filter((note) => {
+        if (filterMode === "archived") return note.archived;
+        if (note.archived) return false;
+        return filterMode === "all" || note.favorite;
+      })
       .map((note) => ({
         note,
         score: query
@@ -288,6 +325,22 @@ export default function Home() {
     favoriteFetcher.submit({ intent: "favorite", id: noteId }, { method: "post" });
   }
 
+  function toggleArchive(note: Note) {
+    archiveFetcher.submit(
+      {
+        intent: note.archived ? "unarchive" : "archive",
+        id: note.id,
+        ...(isEditing ? { title: draftTitle, content: draftContent } : {}),
+      },
+      { method: "post" },
+    );
+  }
+
+  function selectFilter(mode: FilterMode) {
+    setFilterMode(mode);
+    setFilterMenuOpen(false);
+  }
+
   function requestDelete(noteId: string) {
     setDeleteTargetId(noteId);
   }
@@ -322,6 +375,7 @@ export default function Home() {
         event.preventDefault();
         if (helpOpen) setHelpOpen(false);
         else if (deleteTarget) setDeleteTargetId(null);
+        else if (filterMenuOpen) setFilterMenuOpen(false);
         else if (sortMenuOpen) setSortMenuOpen(false);
         else if (selectedNote) backToList();
         return;
@@ -331,7 +385,7 @@ export default function Home() {
       const isTyping =
         target instanceof HTMLElement &&
         (target.isContentEditable || target.closest("input, textarea, select"));
-      if (isTyping || helpOpen || deleteTarget || sortMenuOpen) return;
+      if (isTyping || helpOpen || deleteTarget || filterMenuOpen || sortMenuOpen) return;
 
       const isNextNoteKey = event.key === "ArrowDown" || event.key === "j";
       const isPreviousNoteKey = event.key === "ArrowUp" || event.key === "k";
@@ -393,6 +447,7 @@ export default function Home() {
     deleteTarget,
     draftContent,
     draftTitle,
+    filterMenuOpen,
     helpOpen,
     isEditing,
     search,
@@ -409,7 +464,13 @@ export default function Home() {
       <section className="notes-panel">
         <div className="list-heading">
           <div className="list-heading-title">
-            <h1>{filterMode === "favorites" ? "Favorites" : "Notes"}</h1>
+            <h1>
+              {filterMode === "favorites"
+                ? "Favorites"
+                : filterMode === "archived"
+                  ? "Archived"
+                  : "Notes"}
+            </h1>
             <button
               className="help-title-button"
               aria-label="Keyboard shortcuts"
@@ -471,19 +532,65 @@ export default function Home() {
         <div className="list-toolbar">
           <span>{visibleNotes.length} notes</span>
           <div className="list-toolbar-controls">
-            <button
-              className={`favorite-filter-button ${filterMode === "favorites" ? "is-active" : ""}`}
-              aria-label={filterMode === "favorites" ? "Show all notes" : "Show favorites only"}
-              aria-pressed={filterMode === "favorites"}
-              title={filterMode === "favorites" ? "Show all notes" : "Show favorites only"}
-              onClick={() => setFilterMode((mode) => (mode === "all" ? "favorites" : "all"))}
-            >
-              <Star size={16} fill={filterMode === "favorites" ? "currentColor" : "none"} />
-            </button>
+            <div className="filter-control" ref={filterControlRef}>
+              <button
+                className="sort-button"
+                onClick={() => {
+                  setFilterMenuOpen((open) => !open);
+                  setSortMenuOpen(false);
+                }}
+                aria-label="Filter notes"
+                aria-expanded={filterMenuOpen}
+              >
+                <Filter size={15} />
+                <span>
+                  {filterMode === "all"
+                    ? "All"
+                    : filterMode === "favorites"
+                      ? "Favorites"
+                      : "Archived"}
+                </span>
+                <ChevronDown size={13} />
+              </button>
+              {filterMenuOpen && (
+                <div className="sort-menu">
+                  <button aria-pressed={filterMode === "all"} onClick={() => selectFilter("all")}>
+                    <FileText size={14} />
+                    <span>All notes</span>
+                    <span className="sort-option-check">
+                      {filterMode === "all" && <Check size={14} />}
+                    </span>
+                  </button>
+                  <button
+                    aria-pressed={filterMode === "favorites"}
+                    onClick={() => selectFilter("favorites")}
+                  >
+                    <Star size={14} />
+                    <span>Favorites</span>
+                    <span className="sort-option-check">
+                      {filterMode === "favorites" && <Check size={14} />}
+                    </span>
+                  </button>
+                  <button
+                    aria-pressed={filterMode === "archived"}
+                    onClick={() => selectFilter("archived")}
+                  >
+                    <Archive size={14} />
+                    <span>Archived</span>
+                    <span className="sort-option-check">
+                      {filterMode === "archived" && <Check size={14} />}
+                    </span>
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="sort-control" ref={sortControlRef}>
               <button
                 className="sort-button"
-                onClick={() => setSortMenuOpen((open) => !open)}
+                onClick={() => {
+                  setSortMenuOpen((open) => !open);
+                  setFilterMenuOpen(false);
+                }}
                 aria-expanded={sortMenuOpen}
               >
                 <ArrowDownWideNarrow size={15} />
@@ -581,15 +688,17 @@ export default function Home() {
               >
                 <ArrowLeft size={17} />
               </button>
-              <button
-                className={`note-toolbar-button favorite-toggle ${selectedNote.favorite ? "is-favorite" : ""}`}
-                aria-label={selectedNote.favorite ? "Remove favorite" : "Add favorite"}
-                aria-pressed={selectedNote.favorite}
-                disabled={favoriteFetcher.state !== "idle"}
-                onClick={() => toggleFavorite(selectedNote.id)}
-              >
-                <Star size={17} fill={selectedNote.favorite ? "currentColor" : "none"} />
-              </button>
+              {!selectedNote.archived && (
+                <button
+                  className={`note-toolbar-button favorite-toggle ${selectedNote.favorite ? "is-favorite" : ""}`}
+                  aria-label={selectedNote.favorite ? "Remove favorite" : "Add favorite"}
+                  aria-pressed={selectedNote.favorite}
+                  disabled={favoriteFetcher.state !== "idle"}
+                  onClick={() => toggleFavorite(selectedNote.id)}
+                >
+                  <Star size={17} fill={selectedNote.favorite ? "currentColor" : "none"} />
+                </button>
+              )}
               <button
                 className="note-toolbar-button edit-toggle-button"
                 aria-label={isEditing ? "View note" : "Edit note"}
@@ -598,6 +707,15 @@ export default function Home() {
                 onClick={isEditing ? saveNote : beginEdit}
               >
                 {isEditing ? <Eye size={16} /> : <Pencil size={15} />}
+              </button>
+              <button
+                className="note-toolbar-button archive-toggle-button"
+                aria-label={selectedNote.archived ? "Unarchive note" : "Archive note"}
+                title={selectedNote.archived ? "Unarchive note" : "Archive note"}
+                disabled={archiveFetcher.state !== "idle"}
+                onClick={() => toggleArchive(selectedNote)}
+              >
+                {selectedNote.archived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
               </button>
               <button
                 className="note-toolbar-button delete-note-button"
