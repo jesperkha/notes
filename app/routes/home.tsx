@@ -47,6 +47,7 @@ type Note = {
 
 type SortMode = "edited" | "created";
 type FilterMode = "all" | "favorites" | "archived";
+const filterOrder: FilterMode[] = ["all", "favorites", "archived"];
 
 function fuzzyScore(query: string, value: string) {
   const normalizedQuery = query.toLowerCase().trim();
@@ -149,6 +150,7 @@ export default function Home() {
   const sortControlRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const noteListRef = useRef<HTMLDivElement>(null);
+  const filterSelectionRef = useRef<FilterMode | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const loginError = actionData && "error" in actionData ? actionData.error : undefined;
 
@@ -199,6 +201,7 @@ export default function Home() {
     setDraftContent("");
     setIsEditing(true);
     setMobileToolbarVisible(true);
+    filterSelectionRef.current = "all";
     setFilterMode("all");
     showToast("New note created");
   }, [createFetcher.data]);
@@ -288,6 +291,15 @@ export default function Home() {
     setIsEditing(false);
   }
 
+  function selectFilter(mode: FilterMode) {
+    if (mode !== filterMode) {
+      setFilterMode(mode);
+      return;
+    }
+    if (visibleNotes[0]) openNote(visibleNotes[0]);
+    else backToList();
+  }
+
   function createNote() {
     if (isEditing) saveNote();
     createFetcher.submit({ intent: "create" }, { method: "post" });
@@ -345,6 +357,13 @@ export default function Home() {
   }
 
   useEffect(() => {
+    if (filterSelectionRef.current === filterMode) return;
+    filterSelectionRef.current = filterMode;
+    if (visibleNotes[0]) openNote(visibleNotes[0]);
+    else backToList();
+  }, [filterMode, visibleNotes, isEditing, selectedNote, draftTitle, draftContent]);
+
+  useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s" && isEditing) {
         event.preventDefault();
@@ -367,6 +386,18 @@ export default function Home() {
         target instanceof HTMLElement &&
         (target.isContentEditable || target.closest("input, textarea, select"));
       if (isTyping || helpOpen || deleteTarget || sortMenuOpen) return;
+
+      const hasModifier = event.altKey || event.ctrlKey || event.metaKey || event.shiftKey;
+      const isNextFilterKey = event.key.toLowerCase() === "l" || event.key === "ArrowRight";
+      const isPreviousFilterKey = event.key.toLowerCase() === "h" || event.key === "ArrowLeft";
+      if (!hasModifier && (isNextFilterKey || isPreviousFilterKey)) {
+        event.preventDefault();
+        const currentIndex = filterOrder.indexOf(filterMode);
+        const offset = isNextFilterKey ? 1 : -1;
+        const nextIndex = Math.max(0, Math.min(filterOrder.length - 1, currentIndex + offset));
+        setFilterMode(filterOrder[nextIndex]);
+        return;
+      }
 
       const isNextNoteKey = event.key === "ArrowDown" || event.key === "j";
       const isPreviousNoteKey = event.key === "ArrowUp" || event.key === "k";
@@ -410,6 +441,25 @@ export default function Home() {
       } else if (event.key === "/") {
         event.preventDefault();
         searchInputRef.current?.focus();
+      } else if (!hasModifier && event.key.toLowerCase() === "d" && selectedNote) {
+        event.preventDefault();
+        requestDelete(selectedNote.id);
+      } else if (
+        !hasModifier &&
+        event.key.toLowerCase() === "s" &&
+        selectedNote &&
+        favoriteFetcher.state === "idle"
+      ) {
+        event.preventDefault();
+        toggleFavorite(selectedNote.id);
+      } else if (
+        !hasModifier &&
+        event.key.toLowerCase() === "a" &&
+        selectedNote &&
+        archiveFetcher.state === "idle"
+      ) {
+        event.preventDefault();
+        toggleArchive(selectedNote);
       } else if (event.key.toLowerCase() === "n") {
         event.preventDefault();
         createNote();
@@ -428,6 +478,8 @@ export default function Home() {
     deleteTarget,
     draftContent,
     draftTitle,
+    favoriteFetcher.state,
+    filterMode,
     helpOpen,
     isEditing,
     search,
@@ -435,6 +487,7 @@ export default function Home() {
     selectedNote,
     sortMenuOpen,
     visibleNotes,
+    archiveFetcher.state,
   ]);
 
   if (!loadedNotes) return <LoginPage error={loginError} />;
@@ -448,7 +501,7 @@ export default function Home() {
             aria-label="All notes"
             title="All notes"
             aria-pressed={filterMode === "all"}
-            onClick={() => setFilterMode("all")}
+            onClick={() => selectFilter("all")}
           >
             <FileText size={18} />
           </button>
@@ -457,7 +510,7 @@ export default function Home() {
             aria-label="Starred notes"
             title="Starred notes"
             aria-pressed={filterMode === "favorites"}
-            onClick={() => setFilterMode("favorites")}
+            onClick={() => selectFilter("favorites")}
           >
             <Star size={18} fill={filterMode === "favorites" ? "currentColor" : "none"} />
           </button>
@@ -466,7 +519,7 @@ export default function Home() {
             aria-label="Archived notes"
             title="Archived notes"
             aria-pressed={filterMode === "archived"}
-            onClick={() => setFilterMode("archived")}
+            onClick={() => selectFilter("archived")}
           >
             <Archive size={18} />
           </button>
@@ -794,6 +847,40 @@ export default function Home() {
                   <kbd>E</kbd>
                 </dt>
                 <dd>Edit selected note</dd>
+              </div>
+              <div>
+                <dt>
+                  <kbd>A</kbd>
+                </dt>
+                <dd>Archive or unarchive selected note</dd>
+              </div>
+              <div>
+                <dt>
+                  <kbd>D</kbd>
+                </dt>
+                <dd>Delete selected note</dd>
+              </div>
+              <div>
+                <dt>
+                  <kbd>S</kbd>
+                </dt>
+                <dd>Star or unstar selected note</dd>
+              </div>
+              <div>
+                <dt>
+                  <kbd>H</kbd>
+                  <span>/</span>
+                  <kbd>←</kbd>
+                </dt>
+                <dd>Previous filter</dd>
+              </div>
+              <div>
+                <dt>
+                  <kbd>L</kbd>
+                  <span>/</span>
+                  <kbd>→</kbd>
+                </dt>
+                <dd>Next filter</dd>
               </div>
               <div>
                 <dt>

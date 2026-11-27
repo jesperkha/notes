@@ -1,6 +1,14 @@
 # Notes
 
-Self hosted single-login markdown notes app.
+Minimal self hosted single-login markdown notes app.
+
+**Features:**
+
+- Markdown rendering
+- Vim mode
+- Keybinds for all features
+- Favorites and archiving
+- Ergonomic mobile UI
 
 <img src=".github/assets/screenshot.png">
 
