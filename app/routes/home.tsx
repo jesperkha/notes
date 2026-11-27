@@ -570,7 +570,10 @@ export default function Home() {
       <section className="workspace" aria-label="Note workspace">
         {selectedNote ? (
           <div className="note-workspace">
-            <aside className="note-actions" aria-label="Note actions">
+            <aside
+              className={`note-actions ${isEditing ? "is-editing" : ""}`}
+              aria-label="Note actions"
+            >
               <button
                 className="note-toolbar-button mobile-back-button"
                 aria-label="Back to notes"
@@ -588,7 +591,7 @@ export default function Home() {
                 <Star size={17} fill={selectedNote.favorite ? "currentColor" : "none"} />
               </button>
               <button
-                className="note-toolbar-button"
+                className="note-toolbar-button edit-toggle-button"
                 aria-label={isEditing ? "View note" : "Edit note"}
                 title={isEditing ? "View note" : "Edit note"}
                 disabled={saveFetcher.state !== "idle"}

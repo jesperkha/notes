@@ -1035,15 +1035,31 @@ input:focus-visible {
   }
 
   .note-actions {
-    flex-direction: row;
-    justify-content: flex-start;
+    position: fixed;
+    z-index: 10;
+    right: calc(16px + env(safe-area-inset-right));
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    flex-direction: column;
+    justify-content: center;
     gap: 8px;
-    padding: 8px 14px;
-    border-bottom: 1px solid #242527;
+    padding: 8px;
+    border: 1px solid #3c4638;
+    border-radius: 999px;
+    background: #222820;
+    box-shadow: 0 8px 26px #0006;
   }
 
   .mobile-back-button {
     display: grid;
+  }
+
+  .note-actions.is-editing > .note-toolbar-button:not(.edit-toggle-button) {
+    display: none;
+  }
+
+  .markdown-content,
+  .code-editor .cm-scroller {
+    padding-bottom: 220px;
   }
 
   .note-document {
