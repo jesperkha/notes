@@ -2,9 +2,14 @@ import { useEffect, useState } from "react";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { markdown } from "@codemirror/lang-markdown";
 import { EditorView } from "@codemirror/view";
-import { vim } from "@replit/codemirror-vim";
+import { Vim, vim } from "@replit/codemirror-vim";
 import { tags } from "@lezer/highlight";
 import CodeMirror from "@uiw/react-codemirror";
+
+Vim.noremap("L", "$", "normal");
+Vim.noremap("H", "^", "normal");
+Vim.noremap("j", "gj", "normal");
+Vim.noremap("k", "gk", "normal");
 
 const markdownHighlight = HighlightStyle.define([
   { tag: tags.link, color: "#c1cfb7" },
