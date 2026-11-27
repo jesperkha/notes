@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { markdown } from "@codemirror/lang-markdown";
 import { EditorView } from "@codemirror/view";
+import { vim } from "@replit/codemirror-vim";
 import { tags } from "@lezer/highlight";
 import CodeMirror from "@uiw/react-codemirror";
 
@@ -47,6 +49,16 @@ type MarkdownEditorProps = {
 };
 
 export default function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 720px)");
+    const updateIsMobile = () => setIsMobile(mediaQuery.matches);
+    updateIsMobile();
+    mediaQuery.addEventListener("change", updateIsMobile);
+    return () => mediaQuery.removeEventListener("change", updateIsMobile);
+  }, []);
+
   return (
     <CodeMirror
       value={value}
@@ -56,6 +68,7 @@ export default function MarkdownEditor({ value, onChange }: MarkdownEditorProps)
         view.focus();
       }}
       extensions={[
+        ...(!isMobile ? [vim()] : []),
         markdown(),
         syntaxHighlighting(markdownHighlight),
         EditorView.lineWrapping,

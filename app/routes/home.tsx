@@ -313,15 +313,8 @@ export default function Home() {
     function handleKeyDown(event: KeyboardEvent) {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s" && isEditing) {
         event.preventDefault();
+        event.stopPropagation();
         saveNote();
-        return;
-      }
-
-      if (event.key === "Escape") {
-        if (helpOpen) setHelpOpen(false);
-        else if (deleteTarget) setDeleteTargetId(null);
-        else if (sortMenuOpen) setSortMenuOpen(false);
-        else if (isEditing) saveNote();
         return;
       }
 
@@ -346,9 +339,9 @@ export default function Home() {
       }
     }
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [deleteTarget, draftContent, draftTitle, helpOpen, isEditing, selectedNote, sortMenuOpen]);
+    document.addEventListener("keydown", handleKeyDown, true);
+    return () => document.removeEventListener("keydown", handleKeyDown, true);
+  }, [deleteTarget, draftContent, draftTitle, helpOpen, isEditing, selectedNote]);
 
   if (!loadedNotes) return <LoginPage error={loginError} />;
 
