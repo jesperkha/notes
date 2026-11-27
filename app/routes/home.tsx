@@ -139,14 +139,13 @@ export default function Home() {
   const [searchHighlightId, setSearchHighlightId] = useState<string | null>(null);
   const [sortMode, setSortMode] = useState<SortMode>("edited");
   const [filterMode, setFilterMode] = useState<FilterMode>("all");
-  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [mobileToolbarVisible, setMobileToolbarVisible] = useState(true);
   const [draftTitle, setDraftTitle] = useState("");
   const [draftContent, setDraftContent] = useState("");
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [toast, setToast] = useState("");
-  const filterControlRef = useRef<HTMLDivElement>(null);
   const sortControlRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const noteListRef = useRef<HTMLDivElement>(null);
@@ -182,21 +181,6 @@ export default function Home() {
   }, [sortMenuOpen]);
 
   useEffect(() => {
-    if (!filterMenuOpen) return;
-    function closeFilterMenu(event: PointerEvent) {
-      if (
-        event.target instanceof Node &&
-        filterControlRef.current &&
-        !filterControlRef.current.contains(event.target)
-      ) {
-        setFilterMenuOpen(false);
-      }
-    }
-    document.addEventListener("pointerdown", closeFilterMenu);
-    return () => document.removeEventListener("pointerdown", closeFilterMenu);
-  }, [filterMenuOpen]);
-
-  useEffect(() => {
     if (!toast) return;
     const timeout = window.setTimeout(() => setToast(""), 2400);
     return () => window.clearTimeout(timeout);
@@ -214,6 +198,7 @@ export default function Home() {
     setDraftTitle("Untitled note");
     setDraftContent("");
     setIsEditing(true);
+    setMobileToolbarVisible(true);
     setFilterMode("all");
     showToast("New note created");
   }, [createFetcher.data]);
@@ -285,6 +270,7 @@ export default function Home() {
 
   function openNote(note: Note) {
     if (search.trim()) setSearchHighlightId(note.id);
+    setMobileToolbarVisible(true);
     if (selectedId === note.id) {
       if (isEditing) saveNote();
       return;
@@ -336,11 +322,6 @@ export default function Home() {
     );
   }
 
-  function selectFilter(mode: FilterMode) {
-    setFilterMode(mode);
-    setFilterMenuOpen(false);
-  }
-
   function requestDelete(noteId: string) {
     setDeleteTargetId(noteId);
   }
@@ -360,6 +341,7 @@ export default function Home() {
     setDraftTitle(selectedNote.title);
     setDraftContent(selectedNote.content);
     setIsEditing(true);
+    setMobileToolbarVisible(true);
   }
 
   useEffect(() => {
@@ -375,7 +357,6 @@ export default function Home() {
         event.preventDefault();
         if (helpOpen) setHelpOpen(false);
         else if (deleteTarget) setDeleteTargetId(null);
-        else if (filterMenuOpen) setFilterMenuOpen(false);
         else if (sortMenuOpen) setSortMenuOpen(false);
         else if (selectedNote) backToList();
         return;
@@ -385,7 +366,7 @@ export default function Home() {
       const isTyping =
         target instanceof HTMLElement &&
         (target.isContentEditable || target.closest("input, textarea, select"));
-      if (isTyping || helpOpen || deleteTarget || filterMenuOpen || sortMenuOpen) return;
+      if (isTyping || helpOpen || deleteTarget || sortMenuOpen) return;
 
       const isNextNoteKey = event.key === "ArrowDown" || event.key === "j";
       const isPreviousNoteKey = event.key === "ArrowUp" || event.key === "k";
@@ -447,7 +428,6 @@ export default function Home() {
     deleteTarget,
     draftContent,
     draftTitle,
-    filterMenuOpen,
     helpOpen,
     isEditing,
     search,
@@ -462,223 +442,209 @@ export default function Home() {
   return (
     <main className={`app-shell ${selectedNote ? "has-selected-note" : ""}`}>
       <section className="notes-panel">
-        <div className="list-heading">
-          <div className="list-heading-title">
-            <h1>
-              {filterMode === "favorites"
-                ? "Favorites"
-                : filterMode === "archived"
-                  ? "Archived"
-                  : "Notes"}
-            </h1>
+        <nav className="note-filter-toolbar" aria-label="Note filters">
+          <button
+            className={`note-filter-button ${filterMode === "all" ? "is-active" : ""}`}
+            aria-label="All notes"
+            title="All notes"
+            aria-pressed={filterMode === "all"}
+            onClick={() => setFilterMode("all")}
+          >
+            <FileText size={18} />
+          </button>
+          <button
+            className={`note-filter-button starred-filter ${filterMode === "favorites" ? "is-active" : ""}`}
+            aria-label="Starred notes"
+            title="Starred notes"
+            aria-pressed={filterMode === "favorites"}
+            onClick={() => setFilterMode("favorites")}
+          >
+            <Star size={18} fill={filterMode === "favorites" ? "currentColor" : "none"} />
+          </button>
+          <button
+            className={`note-filter-button ${filterMode === "archived" ? "is-active" : ""}`}
+            aria-label="Archived notes"
+            title="Archived notes"
+            aria-pressed={filterMode === "archived"}
+            onClick={() => setFilterMode("archived")}
+          >
+            <Archive size={18} />
+          </button>
+        </nav>
+        <div className="notes-panel-content">
+          <div className="list-heading">
+            <div className="list-heading-title">
+              <h1>
+                {filterMode === "favorites"
+                  ? "Starred"
+                  : filterMode === "archived"
+                    ? "Archived"
+                    : "Notes"}
+              </h1>
+              <button
+                className="help-title-button"
+                aria-label="Keyboard shortcuts"
+                onClick={() => setHelpOpen(true)}
+              >
+                <CircleHelp size={17} strokeWidth={1.7} />
+              </button>
+            </div>
+            <div className="list-heading-actions">
+              <Form method="post">
+                <input type="hidden" name="intent" value="logout" />
+                <button
+                  className="logout-button"
+                  type="submit"
+                  aria-label="Sign out"
+                  title="Sign out"
+                >
+                  <LogOut size={15} />
+                </button>
+              </Form>
+            </div>
+          </div>
+          <div className="search-row">
+            <label className="search-field">
+              <Search size={16} strokeWidth={1.8} />
+              <input
+                ref={searchInputRef}
+                value={search}
+                onChange={(event) => updateSearch(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && visibleNotes[0]) {
+                    event.preventDefault();
+                    openNote(visibleNotes[0]);
+                    searchInputRef.current?.blur();
+                  }
+                }}
+                placeholder="Search notes"
+                aria-label="Search notes"
+              />
+              {search ? (
+                <button
+                  className="clear-search"
+                  onClick={() => updateSearch("")}
+                  aria-label="Clear search"
+                >
+                  <X size={14} />
+                </button>
+              ) : null}
+            </label>
             <button
-              className="help-title-button"
-              aria-label="Keyboard shortcuts"
-              onClick={() => setHelpOpen(true)}
+              className="new-button"
+              onClick={createNote}
+              disabled={createFetcher.state !== "idle"}
             >
-              <CircleHelp size={17} strokeWidth={1.7} />
+              <Pencil size={14} strokeWidth={2} />
+              <span>New</span>
             </button>
           </div>
-          <div className="list-heading-actions">
-            <Form method="post">
-              <input type="hidden" name="intent" value="logout" />
-              <button
-                className="logout-button"
-                type="submit"
-                aria-label="Sign out"
-                title="Sign out"
-              >
-                <LogOut size={15} />
-              </button>
-            </Form>
-          </div>
-        </div>
-        <div className="search-row">
-          <label className="search-field">
-            <Search size={16} strokeWidth={1.8} />
-            <input
-              ref={searchInputRef}
-              value={search}
-              onChange={(event) => updateSearch(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" && visibleNotes[0]) {
-                  event.preventDefault();
-                  openNote(visibleNotes[0]);
-                  searchInputRef.current?.blur();
-                }
-              }}
-              placeholder="Search notes"
-              aria-label="Search notes"
-            />
-            {search ? (
-              <button
-                className="clear-search"
-                onClick={() => updateSearch("")}
-                aria-label="Clear search"
-              >
-                <X size={14} />
-              </button>
-            ) : null}
-          </label>
-          <button
-            className="new-button"
-            onClick={createNote}
-            disabled={createFetcher.state !== "idle"}
-          >
-            <Pencil size={14} strokeWidth={2} />
-            <span>New</span>
-          </button>
-        </div>
-        <div className="list-toolbar">
-          <span>{visibleNotes.length} notes</span>
-          <div className="list-toolbar-controls">
-            <div className="filter-control" ref={filterControlRef}>
-              <button
-                className="sort-button"
-                onClick={() => {
-                  setFilterMenuOpen((open) => !open);
-                  setSortMenuOpen(false);
-                }}
-                aria-label="Filter notes"
-                aria-expanded={filterMenuOpen}
-              >
-                <Filter size={15} />
-                <span>
-                  {filterMode === "all"
-                    ? "All"
-                    : filterMode === "favorites"
-                      ? "Favorites"
-                      : "Archived"}
-                </span>
-                <ChevronDown size={13} />
-              </button>
-              {filterMenuOpen && (
-                <div className="sort-menu">
-                  <button aria-pressed={filterMode === "all"} onClick={() => selectFilter("all")}>
-                    <FileText size={14} />
-                    <span>All notes</span>
-                    <span className="sort-option-check">
-                      {filterMode === "all" && <Check size={14} />}
-                    </span>
-                  </button>
-                  <button
-                    aria-pressed={filterMode === "favorites"}
-                    onClick={() => selectFilter("favorites")}
-                  >
-                    <Star size={14} />
-                    <span>Favorites</span>
-                    <span className="sort-option-check">
-                      {filterMode === "favorites" && <Check size={14} />}
-                    </span>
-                  </button>
-                  <button
-                    aria-pressed={filterMode === "archived"}
-                    onClick={() => selectFilter("archived")}
-                  >
-                    <Archive size={14} />
-                    <span>Archived</span>
-                    <span className="sort-option-check">
-                      {filterMode === "archived" && <Check size={14} />}
-                    </span>
-                  </button>
-                </div>
-              )}
-            </div>
-            <div className="sort-control" ref={sortControlRef}>
-              <button
-                className="sort-button"
-                onClick={() => {
-                  setSortMenuOpen((open) => !open);
-                  setFilterMenuOpen(false);
-                }}
-                aria-expanded={sortMenuOpen}
-              >
-                <ArrowDownWideNarrow size={15} />
-                <span>{sortMode === "edited" ? "Edited" : "Created"}</span>
-                <ChevronDown size={13} />
-              </button>
-              {sortMenuOpen && (
-                <div className="sort-menu">
-                  <button
-                    onClick={() => {
-                      setSortMode("edited");
-                      setSortMenuOpen(false);
-                    }}
-                  >
-                    <span className="sort-option-icon">
-                      <Clock3 size={14} />
-                    </span>
-                    <span>Date edited</span>
-                    <span className="sort-option-check">
-                      {sortMode === "edited" && <Check size={14} />}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSortMode("created");
-                      setSortMenuOpen(false);
-                    }}
-                  >
-                    <span className="sort-option-icon">
-                      <Filter size={14} />
-                    </span>
-                    <span>Date created</span>
-                    <span className="sort-option-check">
-                      {sortMode === "created" && <Check size={14} />}
-                    </span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="note-list" ref={noteListRef}>
-          {visibleNotes.length ? (
-            visibleNotes.map((note) => (
-              <article
-                key={note.id}
-                className={`note-row ${highlightedId === note.id ? "selected" : ""}`}
-              >
-                <button className="note-open" onClick={() => openNote(note)}>
-                  <span className="note-title">
-                    <span>{note.title}</span>
-                    {note.favorite && <Star className="row-star" size={12} fill="currentColor" />}
-                  </span>
-                  <span className="note-meta">
-                    <span className="note-snippet">
-                      {note.content
-                        .replace(/[#>*_-]/g, "")
-                        .replaceAll("[", "")
-                        .replaceAll("]", "")
-                        .slice(0, 62) || "No content"}
-                    </span>
-                    <span className="note-date">{formatRelativeDate(note.editedAt)}</span>
-                  </span>
-                </button>
+          <div className="list-toolbar">
+            <span>{visibleNotes.length} notes</span>
+            <div className="list-toolbar-controls">
+              <div className="sort-control" ref={sortControlRef}>
                 <button
-                  className="row-delete"
-                  aria-label={`Delete ${note.title}`}
-                  onClick={() => requestDelete(note.id)}
+                  className="sort-button"
+                  onClick={() => setSortMenuOpen((open) => !open)}
+                  aria-expanded={sortMenuOpen}
                 >
-                  <Trash2 size={14} />
+                  <ArrowDownWideNarrow size={15} />
+                  <span>{sortMode === "edited" ? "Edited" : "Created"}</span>
+                  <ChevronDown size={13} />
                 </button>
-              </article>
-            ))
-          ) : (
-            <div className="empty-list">
-              <Search size={19} />
-              <p>No notes found</p>
-              <span>Try a different search.</span>
+                {sortMenuOpen && (
+                  <div className="sort-menu">
+                    <button
+                      onClick={() => {
+                        setSortMode("edited");
+                        setSortMenuOpen(false);
+                      }}
+                    >
+                      <span className="sort-option-icon">
+                        <Clock3 size={14} />
+                      </span>
+                      <span>Date edited</span>
+                      <span className="sort-option-check">
+                        {sortMode === "edited" && <Check size={14} />}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSortMode("created");
+                        setSortMenuOpen(false);
+                      }}
+                    >
+                      <span className="sort-option-icon">
+                        <Filter size={14} />
+                      </span>
+                      <span>Date created</span>
+                      <span className="sort-option-check">
+                        {sortMode === "created" && <Check size={14} />}
+                      </span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+          </div>
+          <div className="note-list" ref={noteListRef}>
+            {visibleNotes.length ? (
+              visibleNotes.map((note) => (
+                <article
+                  key={note.id}
+                  className={`note-row ${highlightedId === note.id ? "selected" : ""}`}
+                >
+                  <button className="note-open" onClick={() => openNote(note)}>
+                    <span className="note-title">
+                      <span>{note.title}</span>
+                      {note.favorite && <Star className="row-star" size={12} fill="currentColor" />}
+                    </span>
+                    <span className="note-meta">
+                      <span className="note-snippet">
+                        {note.content
+                          .replace(/[#>*_-]/g, "")
+                          .replaceAll("[", "")
+                          .replaceAll("]", "")
+                          .slice(0, 62) || "No content"}
+                      </span>
+                      <span className="note-date">{formatRelativeDate(note.editedAt)}</span>
+                    </span>
+                  </button>
+                  <button
+                    className="row-delete"
+                    aria-label={`Delete ${note.title}`}
+                    onClick={() => requestDelete(note.id)}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </article>
+              ))
+            ) : (
+              <div className="empty-list">
+                <Search size={19} />
+                <p>No notes found</p>
+                <span>Try a different search.</span>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
       <section className="workspace" aria-label="Note workspace">
         {selectedNote ? (
-          <div className="note-workspace">
+          <div
+            className="note-workspace"
+            onClick={(event) => {
+              if (
+                window.matchMedia("(max-width: 720px)").matches &&
+                !(event.target instanceof Element && event.target.closest(".note-actions"))
+              ) {
+                setMobileToolbarVisible((visible) => !visible);
+              }
+            }}
+          >
             <aside
-              className={`note-actions ${isEditing ? "is-editing" : ""}`}
+              className={`note-actions ${isEditing ? "is-editing" : ""} ${mobileToolbarVisible ? "" : "is-hidden"}`}
               aria-label="Note actions"
             >
               <button

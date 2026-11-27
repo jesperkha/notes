@@ -8,6 +8,16 @@ if (process.env.NODE_ENV === "production") {
 
 const sampleNotes = [
   {
+    id: "sample-long-note",
+    title: "Long note for scrolling",
+    content: Array.from(
+      { length: 80 },
+      (_, index) =>
+        `## Section ${index + 1}\n\nThis sample note is intentionally long so you can test scrolling through a document on both desktop and mobile. Add ideas, observations, and details here as the note continues down the page.`,
+    ).join("\n\n"),
+    favorite: false,
+  },
+  {
     id: "sample-field-notes",
     title: "Field notes from the coast",
     content:

@@ -101,7 +101,7 @@ input:focus-visible {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 345px minmax(0, 1fr);
+  grid-template-columns: 370px minmax(0, 1fr);
   width: 100%;
   height: 100vh;
   height: 100dvh;
@@ -114,10 +114,58 @@ input:focus-visible {
   display: flex;
   min-width: 0;
   min-height: 0;
-  flex-direction: column;
+  flex-direction: row;
   overflow: hidden;
   border-right: 1px solid #292a2b;
   background: var(--surface);
+}
+
+.note-filter-toolbar {
+  display: flex;
+  width: 48px;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 26px 5px;
+  border-right: 1px solid #292a2b;
+  background: var(--surface);
+}
+
+.note-filter-button {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #85878a;
+  cursor: pointer;
+}
+
+.note-filter-button:hover {
+  background: var(--hover);
+  color: #e0e1de;
+}
+
+.note-filter-button.is-active {
+  background: #343c32;
+  color: #dce4d5;
+}
+
+.note-filter-button.starred-filter.is-active {
+  color: var(--star);
+}
+
+.notes-panel-content {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .list-heading {
@@ -592,7 +640,14 @@ input:focus-visible {
   flex: 1;
   flex-direction: column;
   justify-self: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 27px 48px 32px;
+  scrollbar-width: none;
+}
+
+.note-document::-webkit-scrollbar {
+  display: none;
 }
 
 .document-title,
@@ -636,6 +691,15 @@ input:focus-visible {
 
 .note-content-area.is-editing {
   overflow: hidden;
+}
+
+.note-content-area:not(.is-editing) {
+  flex: none;
+}
+
+.note-content-area:not(.is-editing) .markdown-content {
+  height: auto;
+  overflow: visible;
 }
 
 .markdown-content {
@@ -973,7 +1037,7 @@ input:focus-visible {
 
 @media (max-width: 1050px) {
   .app-shell {
-    grid-template-columns: 300px minmax(0, 1fr);
+    grid-template-columns: 325px minmax(0, 1fr);
   }
 
   .note-document {
@@ -999,7 +1063,35 @@ input:focus-visible {
   }
 
   .notes-panel {
+    flex-direction: column;
     border-right: 0;
+  }
+
+  .notes-panel-content {
+    width: 100%;
+    height: 100%;
+  }
+
+  .note-filter-toolbar {
+    position: fixed;
+    z-index: 15;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    left: 50%;
+    width: auto;
+    flex-direction: row;
+    gap: 6px;
+    padding: 6px;
+    transform: translateX(-50%);
+    border: 1px solid #3c4638;
+    border-radius: 999px;
+    background: #222820;
+    box-shadow: 0 8px 26px #0006;
+  }
+
+  .note-filter-button {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
   }
 
   .app-shell.has-selected-note .notes-panel,
@@ -1025,6 +1117,20 @@ input:focus-visible {
     border-radius: 999px;
     background: #222820;
     box-shadow: 0 8px 26px #0006;
+    transition:
+      transform 180ms ease-out,
+      opacity 180ms ease-out;
+  }
+
+  .note-actions.is-hidden {
+    transform: translateX(calc(100% + 24px));
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition:
+      transform 180ms ease-out,
+      opacity 180ms ease-out,
+      visibility 0s linear 180ms;
   }
 
   .mobile-back-button {
@@ -1072,6 +1178,7 @@ input:focus-visible {
   .note-list {
     padding-right: 10px;
     padding-left: 10px;
+    padding-bottom: 100px;
   }
 
   .search-field {
@@ -1089,6 +1196,7 @@ input:focus-visible {
   .note-toolbar-button {
     width: 42px;
     height: 42px;
+    border-radius: 50%;
   }
 
   .note-toolbar-button svg {
