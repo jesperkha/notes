@@ -51,6 +51,10 @@ export default function MarkdownEditor({ value, onChange }: MarkdownEditorProps)
     <CodeMirror
       value={value}
       onChange={onChange}
+      onCreateEditor={(view) => {
+        view.dispatch({ selection: { anchor: view.state.doc.length } });
+        view.focus();
+      }}
       extensions={[
         markdown(),
         syntaxHighlighting(markdownHighlight),
