@@ -49,6 +49,10 @@ type SortMode = "edited" | "created";
 type FilterMode = "all" | "favorites" | "archived";
 const filterOrder: FilterMode[] = ["all", "favorites", "archived"];
 
+function isMobileViewport() {
+  return window.matchMedia("(max-width: 720px)").matches;
+}
+
 function fuzzyScore(query: string, value: string) {
   const normalizedQuery = query.toLowerCase().trim();
   const normalizedValue = value.toLowerCase();
@@ -296,6 +300,10 @@ export default function Home() {
       setFilterMode(mode);
       return;
     }
+    if (isMobileViewport()) {
+      backToList();
+      return;
+    }
     if (visibleNotes[0]) openNote(visibleNotes[0]);
     else backToList();
   }
@@ -359,6 +367,10 @@ export default function Home() {
   useEffect(() => {
     if (filterSelectionRef.current === filterMode) return;
     filterSelectionRef.current = filterMode;
+    if (isMobileViewport()) {
+      backToList();
+      return;
+    }
     if (visibleNotes[0]) openNote(visibleNotes[0]);
     else backToList();
   }, [filterMode, visibleNotes, isEditing, selectedNote, draftTitle, draftContent]);
