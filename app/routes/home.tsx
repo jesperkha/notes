@@ -318,13 +318,61 @@ export default function Home() {
         return;
       }
 
+      if (event.key === "Escape" && !isEditing) {
+        event.preventDefault();
+        if (helpOpen) setHelpOpen(false);
+        else if (deleteTarget) setDeleteTargetId(null);
+        else if (sortMenuOpen) setSortMenuOpen(false);
+        else if (selectedNote) backToList();
+        return;
+      }
+
       const target = event.target;
       const isTyping =
         target instanceof HTMLElement &&
         (target.isContentEditable || target.closest("input, textarea, select"));
-      if (isTyping || helpOpen || deleteTarget) return;
+      if (isTyping || helpOpen || deleteTarget || sortMenuOpen) return;
 
-      if (event.key === "/") {
+      const isNextNoteKey = event.key === "ArrowDown" || event.key === "j";
+      const isPreviousNoteKey = event.key === "ArrowUp" || event.key === "k";
+      if (
+        !isEditing &&
+        !search.trim() &&
+        !event.altKey &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.shiftKey &&
+        (isNextNoteKey || isPreviousNoteKey)
+      ) {
+        const selectedIndex = visibleNotes.findIndex((note) => note.id === selectedId);
+        const nextIndex =
+          selectedIndex < 0
+            ? isNextNoteKey
+              ? 0
+              : visibleNotes.length - 1
+            : selectedIndex + (isNextNoteKey ? 1 : -1);
+        const note = visibleNotes[nextIndex];
+        if (note) {
+          event.preventDefault();
+          openNote(note);
+        }
+        return;
+      }
+
+      if (
+        !isEditing &&
+        !search.trim() &&
+        !event.altKey &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        /^[1-9]$/.test(event.key)
+      ) {
+        const note = visibleNotes[Number(event.key) - 1];
+        if (note) {
+          event.preventDefault();
+          openNote(note);
+        }
+      } else if (event.key === "/") {
         event.preventDefault();
         searchInputRef.current?.focus();
       } else if (event.key.toLowerCase() === "n") {
@@ -341,7 +389,18 @@ export default function Home() {
 
     document.addEventListener("keydown", handleKeyDown, true);
     return () => document.removeEventListener("keydown", handleKeyDown, true);
-  }, [deleteTarget, draftContent, draftTitle, helpOpen, isEditing, selectedNote]);
+  }, [
+    deleteTarget,
+    draftContent,
+    draftTitle,
+    helpOpen,
+    isEditing,
+    search,
+    selectedId,
+    selectedNote,
+    sortMenuOpen,
+    visibleNotes,
+  ]);
 
   if (!loadedNotes) return <LoginPage error={loginError} />;
 
@@ -651,6 +710,28 @@ export default function Home() {
               </div>
               <div>
                 <dt>
+                  <kbd>1-9</kbd>
+                </dt>
+                <dd>Open note by list position</dd>
+              </div>
+              <div>
+                <dt>
+                  <kbd>↑</kbd>
+                  <span>/</span>
+                  <kbd>K</kbd>
+                </dt>
+                <dd>Previous note</dd>
+              </div>
+              <div>
+                <dt>
+                  <kbd>↓</kbd>
+                  <span>/</span>
+                  <kbd>J</kbd>
+                </dt>
+                <dd>Next note</dd>
+              </div>
+              <div>
+                <dt>
                   <kbd>Ctrl</kbd>
                   <span>+</span>
                   <kbd>S</kbd>
@@ -667,7 +748,7 @@ export default function Home() {
                 <dt>
                   <kbd>Esc</kbd>
                 </dt>
-                <dd>Save and view or dismiss dialog</dd>
+                <dd>Close popup or return to notes</dd>
               </div>
             </dl>
           </section>
